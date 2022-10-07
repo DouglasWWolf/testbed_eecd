@@ -26,7 +26,7 @@ module req_manager
     //==========================  AXI Stream interface for data input  ==============================
     input[511:0]        AXIS_RX_TDATA,
     input               AXIS_RX_TVALID,
-    output reg          AXIS_RX_TREADY,
+    output              AXIS_RX_TREADY,
     //===============================================================================================
 
 
@@ -49,43 +49,65 @@ wire RX_HANDSHAKE = AXIS_RX_TVALID & AXIS_RX_TREADY;
 
 reg        rx_data_req;
 reg        rx_data_valid;
+reg        axis_rx_tready;
+
 wire       is_rx_data_valid = (rx_data_req == 0 && rx_data_valid == 1);
 
 reg[255:0] data_word[0:1];
 
 
+//===================================================================================================
+// State machine that allows incoming data to flow in
+//===================================================================================================
+assign AXIS_RX_TREADY = (resetn == 1) && (rx_data_req || axis_rx_tready);
+//===================================================================================================
 always @(posedge clk) begin
+   
+    // If we're in reset, by definition the data_word[] values aren't valid.
+    // When we come out of reset, we want to instantly drive AXIS_RX_TREADY 
+    // high so that a data-word flows in as soon as one is ready
     if (resetn == 0) begin
         rx_data_valid  <= 0;
-        AXIS_RX_TREADY <= 0;
-    end else case (rx_data_valid)
+        axis_rx_tready <= 1;
+    end else begin
 
-    0:  begin
-            AXIS_RX_TREADY <= 1;
-            if (RX_HANDSHAKE) begin
-                AXIS_RX_TREADY <= 0;
-                data_word[0]   <= AXIS_RX_TDATA[511:256];
-                data_word[1]   <= AXIS_RX_TDATA[255:000];
-                rx_data_valid  <= 1;
-            end
-        end 
-
-    1:  if (rx_data_req) begin
-            AXIS_RX_TREADY <= 1;
+        // If the other state machine asks for new data, AXIS_RX_TREADY is already
+        // high.   Here we keep track of the fact that we want it to stay high
+        // and we declare the data_word[] registers to no longer hold valid data.
+        if (rx_data_req) begin
+            axis_rx_tready <= 1;
             rx_data_valid  <= 0;
         end
 
-    endcase
+        // If incoming data has arrived...
+        if (RX_HANDSHAKE) begin
+            
+            // Lower the AXIS_RX_TREADY signal
+            axis_rx_tready <= 0;
+            
+            // Store the data that just arrived
+            data_word[0] <= AXIS_RX_TDATA[511:256];
+            data_word[1] <= AXIS_RX_TDATA[255:000];
+
+            // And indicate that data_word[] holds valid values
+            rx_data_valid  <= 1;
+        end
+    end
 
 end
+//===================================================================================================
 
 
 
+//===================================================================================================
+// flow state machine: main state machine that waits for a data-request to arrive, then transmits
+// a 1 cycle packet header, 64 cycles of packet data, and 1 cycle of packet footer
+//===================================================================================================
 reg[2:0]   fsm_state;
-reg[31:0]  req_id;
+reg[31:0]  req_id, buffered_request;
 reg[255:0] buffered_word;
 reg[7:0]   beat_countdown;
-
+//===================================================================================================
 always @(posedge clk) begin
     
     // This signal only strobes high for a single cycle
@@ -104,17 +126,19 @@ always @(posedge clk) begin
         end
 
     // If a new request has arrived...
-    1:  if (RQ_HANDSHAKE) begin
-                
-            // We are no longer ready for a new data request
-            AXIS_RQ_TREADY <= 0;
-
-            // Save the request
+    1:  if (AXIS_RQ_TVALID) begin
+            
+            // Keep track of the data-request ID for future use
             req_id <= AXIS_RQ_TDATA;
 
-            // Place the packet header on the bus
-            AXIS_TX_TDATA  <= AXIS_RQ_TDATA;
+            // Emit a packet-header which consists of the data-request ID
+            AXIS_TX_TDATA <= AXIS_RQ_TDATA;
+
+            // We have valid data on the TX data bus
             AXIS_TX_TVALID <= 1;
+
+            // We are no longer ready for a new data request
+            AXIS_RQ_TREADY <= 0;
 
             // This is how many beats of RX data we have left to send
             beat_countdown <= RX_BEATS_PER_PACKET;
@@ -159,7 +183,7 @@ always @(posedge clk) begin
             AXIS_TX_TDATA <= buffered_word;
 
             // If this was the last data-beat we need to transmit, go to the next
-            // state, otherwise, go tto the previous state to wait for the transmit
+            // state, otherwise, go to the previous state to wait for the transmit
             // to be accepted
             if (beat_countdown == 1)
                 fsm_state <= fsm_state + 1;
@@ -176,28 +200,56 @@ always @(posedge clk) begin
             // Place the packet-footer onto the TX data-bus
             AXIS_TX_TDATA <= req_id;
 
+            // Allow another data-request to arrive
+            AXIS_RQ_TREADY <= 1;
+
             // And go wait for the handshake
             fsm_state <= fsm_state + 1;
 
         end
 
-    // If the packet-footer has been accepted...
-    5:  if (AXIS_TX_TREADY) begin
+    5:  begin
 
-            // We no longer have valid data on the TX data-bus
-            AXIS_TX_TVALID <= 0;
+            // If a new data-request has arrived, save it, and lower AXIS_RQ_TREADY 
+            // to signal that we are no longer accepting data-requests
+            if (RQ_HANDSHAKE) begin
+                req_id         <= AXIS_RQ_TDATA;
+                AXIS_RQ_TREADY <= 0;
+            end
 
-            // We're ready for another incoming request
-            AXIS_RQ_TREADY <= 1;
+            // If the packet footer we transmitted has been accepted...
+            if (AXIS_TX_TREADY) begin
+                
+                // If we have a buffered data-request that we need to emit a packet header for...
+                if (AXIS_RQ_TREADY == 0) begin
+                    AXIS_TX_TDATA  <= req_id;
+                    beat_countdown <= RX_BEATS_PER_PACKET;
+                    fsm_state      <= 2;
+                end 
 
-            // And go wait for that new request to arrive
-            fsm_state <= 1;
+                // If a data-request has just arrived and we need to emit a packet header...
+                else if (AXIS_RQ_TVALID) begin
+                    AXIS_TX_TDATA  <= AXIS_RQ_TDATA;
+                    beat_countdown <= RX_BEATS_PER_PACKET;
+                    fsm_state      <= 2;
+                end
+
+                // Otherwise, we no longer have valid data on the TX data-bus
+                // and we need to go wait for a request to arrive
+                else begin
+                    AXIS_TX_TVALID <= 0;
+                    fsm_state      <= 1;
+                end
+           
+            end
 
         end
 
     endcase
 
 end
+//===================================================================================================
+
 
 endmodule
 

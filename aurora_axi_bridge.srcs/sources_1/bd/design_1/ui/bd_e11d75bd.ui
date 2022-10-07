@@ -1,0 +1,75 @@
+{
+   "ActiveEmotionalView":"No Loops",
+   "Default View_ScaleFactor":"0.733713",
+   "Default View_TopLeft":"-125,-249",
+   "DisplayTieOff":"1",
+   "ExpandedHierarchyInLayout":"",
+   "No Loops_ExpandedHierarchyInLayout":"",
+   "No Loops_Layout":"# # String gsaved with Nlview 7.0r4  2019-12-20 bk=1.5203 VDI=41 GEI=36 GUI=JA:10.0 TLS
+#  -string -flagsOSRD
+preplace port QSFP_TX -pg 1 -lvl 5 -x 1190 -y 180 -defaultsOSRD
+preplace port QSFP_RX -pg 1 -lvl 5 -x 1190 -y 160 -defaultsOSRD -right
+preplace port port-id_sys_clock -pg 1 -lvl 0 -x 0 -y 120 -defaultsOSRD
+preplace port port-id_sys_resetn -pg 1 -lvl 0 -x 0 -y 140 -defaultsOSRD
+preplace port port-id_qsfp_clock -pg 1 -lvl 0 -x 0 -y 270 -defaultsOSRD
+preplace port port-id_BTNU -pg 1 -lvl 0 -x 0 -y 60 -defaultsOSRD
+preplace portBus peripheral_aresetn -pg 1 -lvl 5 -x 1190 -y 320 -defaultsOSRD
+preplace inst clock_and_reset -pg 1 -lvl 1 -x 190 -y 120 -swap {0 1 4 3 2 5} -defaultsOSRD -pinDir ext_clock left -pinY ext_clock 0L -pinDir ext_resetn left -pinY ext_resetn 20L -pinBusDir peripheral_aresetn right -pinBusY peripheral_aresetn 40R -pinDir sysclock right -pinY sysclock 20R -pinBusDir interconnect_aresetn right -pinBusY interconnect_aresetn 0R -pinBusDir peripheral_reset right -pinBusY peripheral_reset 100R
+preplace inst aurora_lite -pg 1 -lvl 4 -x 960 -y 160 -swap {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 22 21 20 23} -defaultsOSRD -pinDir GT_SERIAL_RX right -pinY GT_SERIAL_RX 0R -pinDir GT_SERIAL_TX right -pinY GT_SERIAL_TX 20R -pinDir USER_DATA_M_AXIS_RX right -pinY USER_DATA_M_AXIS_RX 40R -pinDir USER_DATA_S_AXIS_TX left -pinY USER_DATA_S_AXIS_TX 0L -pinDir qsfp_clock left -pinY qsfp_clock 110L -pinDir user_clk_out right -pinY user_clk_out 60R -pinDir reset_pb left -pinY reset_pb 60L -pinDir sys_reset_out right -pinY sys_reset_out 80R
+preplace inst button -pg 1 -lvl 2 -x 430 -y 60 -swap {1 0 2} -defaultsOSRD -pinDir CLK left -pinY CLK 20L -pinDir PIN left -pinY PIN 0L -pinDir Q right -pinY Q 20R
+preplace inst request_generator -pg 1 -lvl 3 -x 630 -y 80 -swap {0 1 2 3 4 6 7 5} -defaultsOSRD -pinDir AXIS_TX right -pinY AXIS_TX 80R -pinDir clk left -pinY clk 60L -pinDir resetn left -pinY resetn 80L -pinDir BUTTON left -pinY BUTTON 0L
+preplace netloc PIN_0_1 1 0 2 NJ 60 NJ
+preplace netloc button_0_Q 1 2 1 N 80
+preplace netloc clock_and_reset_peripheral_aresetn 1 1 4 NJ 160 510 320 NJ 320 NJ
+preplace netloc clock_and_reset_peripheral_reset 1 1 3 NJ 220 NJ 220 N
+preplace netloc clock_and_reset_sysclock 1 1 2 350 140 N
+preplace netloc ext_reset_in_0_1 1 0 1 NJ 140
+preplace netloc qsfp_clock_1 1 0 4 NJ 270 NJ 270 NJ 270 NJ
+preplace netloc slowest_sync_clk_0_1 1 0 1 NJ 120
+preplace netloc QSFP_RX_1 1 4 1 NJ 160
+preplace netloc aurora_lite_0_GT_SERIAL_TX 1 4 1 NJ 180
+preplace netloc request_gen_0_AXIS_TX 1 3 1 N 160
+levelinfo -pg 1 0 190 430 630 960 1190
+pagesize -pg 1 -db -bbox -sgen -130 0 1410 340
+",
+   "No Loops_ScaleFactor":"0.820613",
+   "No Loops_TopLeft":"-128,-264",
+   "commentid":"",
+   "guistr":"# # String gsaved with Nlview 7.0r4  2019-12-20 bk=1.5203 VDI=41 GEI=36 GUI=JA:10.0 TLS
+#  -string -flagsOSRD
+preplace port QSFP_TX -pg 1 -lvl 6 -x 1570 -y 300 -defaultsOSRD
+preplace port QSFP_RX -pg 1 -lvl 0 -x 0 -y 300 -defaultsOSRD
+preplace port GPIO_LED -pg 1 -lvl 6 -x 1570 -y 170 -defaultsOSRD
+preplace port GPIO_SW -pg 1 -lvl 6 -x 1570 -y 190 -defaultsOSRD
+preplace port port-id_sys_clock -pg 1 -lvl 0 -x 0 -y 380 -defaultsOSRD
+preplace port port-id_sys_resetn -pg 1 -lvl 0 -x 0 -y 400 -defaultsOSRD
+preplace port port-id_qsfp_clock -pg 1 -lvl 0 -x 0 -y 470 -defaultsOSRD
+preplace inst clock_and_reset -pg 1 -lvl 1 -x 180 -y 390 -defaultsOSRD
+preplace inst demonstration_slave -pg 1 -lvl 5 -x 1440 -y 180 -defaultsOSRD
+preplace inst system_interconnect -pg 1 -lvl 4 -x 1180 -y 160 -defaultsOSRD
+preplace inst reset_inverter -pg 1 -lvl 2 -x 560 -y 110 -defaultsOSRD
+preplace inst aurora_lite -pg 1 -lvl 2 -x 560 -y 330 -defaultsOSRD
+preplace inst aximm_stream_server -pg 1 -lvl 3 -x 890 -y 90 -defaultsOSRD
+preplace netloc ARESETN_1 1 1 3 350 10 NJ 10 1020J
+preplace netloc aurora_lite_sys_reset_out 1 1 2 370 240 740
+preplace netloc aurora_lite_user_clk_out 1 2 2 770 180 1020J
+preplace netloc clock_and_reset_peripheral_aresetn 1 1 4 340J 220 NJ 220 1010 290 1330J
+preplace netloc clock_and_reset_peripheral_reset 1 1 1 380 360n
+preplace netloc clock_and_reset_sysclock 1 1 4 360J 230 NJ 230 1030 280 1320J
+preplace netloc ext_reset_in_0_1 1 0 1 NJ 400
+preplace netloc qsfp_clock_1 1 0 2 NJ 470 370J
+preplace netloc reset_inverter_Res 1 2 2 760 190 1040J
+preplace netloc slowest_sync_clk_0_1 1 0 1 NJ 380
+preplace netloc Conn3 1 5 1 NJ 170
+preplace netloc Conn4 1 5 1 NJ 190
+preplace netloc QSFP_RX_1 1 0 2 NJ 300 NJ
+preplace netloc S00_AXI_1 1 3 1 N 100
+preplace netloc USER_DATA_S_AXIS_TX_1 1 1 3 380 170 NJ 170 1010
+preplace netloc aurora_lite_0_GT_SERIAL_TX 1 2 4 NJ 300 NJ 300 NJ 300 NJ
+preplace netloc aurora_lite_USER_DATA_M_AXIS_RX 1 2 1 750 70n
+preplace netloc axi_interconnect_0_M00_AXI 1 4 1 N 160
+levelinfo -pg 1 0 180 560 890 1180 1440 1570
+pagesize -pg 1 -db -bbox -sgen -120 0 1680 490
+"
+}
+0
